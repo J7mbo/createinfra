@@ -1,0 +1,17 @@
+version: '3.9'
+
+services:
+  terraform:
+    image: hashicorp/terraform:1.3.8
+    volumes:
+      - ./infra/terraform:/infra
+    working_dir: /infra
+    env_file: .env
+    command: ${TERRAFORM_COMMAND}
+    environment:
+      TF_VAR_DIGITALOCEAN_PROJECT_NAME: ${DIGITALOCEAN_PROJECT_NAME}
+      TF_VAR_DIGITALOCEAN_ACCESS_TOKEN: ${DIGITALOCEAN_ACCESS_TOKEN}
+      TF_VAR_DIGITALOCEAN_REGION: ${DIGITALOCEAN_REGION}
+      TF_VAR_DIGITALOCEAN_DISTRO_IMAGE: ${DIGITALOCEAN_DISTRO_IMAGE}
+      TF_VAR_DIGITALOCEAN_DROPLET_NAME: ${DIGITALOCEAN_DROPLET_NAME}
+      TF_VAR_DIGITALOCEAN_DROPLET_SIZE: ${DIGITALOCEAN_DROPLET_SIZE}
