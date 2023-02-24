@@ -33,3 +33,8 @@ variable "DIGITALOCEAN_DROPLET_SIZE" {
   type        = string
   description = "The size of the droplet on digitalocean, eg: s-1vcpu-1gb, s-1vcpu-3gb etc"
 }
+
+variable "SSH_KEY_DIR" {
+  type = string
+  description = "The ssh directory, typically /Users/<your_username>/.ssh (only absolute directories work here)"
+}

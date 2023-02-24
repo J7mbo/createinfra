@@ -1,7 +1,7 @@
 ## Public Targets
-plan: --init ## View the Terraform plan for what would be created on DigitalOcean
+plan: --init --get ## View the Terraform plan for what would be created on DigitalOcean
 	TERRAFORM_COMMAND="plan" docker-compose up terraform
-provision: --init ## Provision the nodes on DigitalOcean
+provision: --init --get ## Provision the nodes on DigitalOcean
 	TERRAFORM_COMMAND="apply -auto-approve" docker-compose up terraform
 destroy: ## Destroy the nodes on DigitalOcean
 	TERRAFORM_COMMAND="destroy -auto-approve" docker-compose up terraform
@@ -9,6 +9,8 @@ destroy: ## Destroy the nodes on DigitalOcean
 ## Private Targets -- is a convention
 --init:
 	TERRAFORM_COMMAND="init" docker-compose up terraform
+--get:
+	TERRAFORM_COMMAND="get" docker-compose up terraform
 
 ## Help! The default target
 help: ## Print the help
