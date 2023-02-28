@@ -1,32 +1,35 @@
-locals {
-  /*
-    Droplets to be spun up, their name and the image.
-    Place all droplets here. They will be spun up in a loop within digitalocean_droplet.droplets.
-  */
-  droplets = {
-    (var.DIGITALOCEAN_DROPLET_NAME) : {
-      image = var.DIGITALOCEAN_DISTRO_IMAGE
-      size  = var.DIGITALOCEAN_DROPLET_SIZE
-    }
-  }
-}
-
 /*
-  Loop around 'droplets' defined above (see for_each) to spin up droplets.
+  Loop around 'nodes' defined in inputs.tf (via .env vars) to spin up droplets.
   See: https://registry.terraform.io/providers/digitalocean/digitalocean/latest/docs/resources/droplet
 */
 resource "digitalocean_droplet" "droplets" {
-  for_each = local.droplets
+  for_each = var.NODES
   name     = each.key
   region   = var.DIGITALOCEAN_REGION
   image    = each.value.image
   size     = each.value.size
-  tags     = [each.key]
+  tags     = [each.value.tag]
+
   // Find the module-generated ssh key with the same name as the droplet being created and use that.
   ssh_keys = toset([
-    for key in digitalocean_ssh_key.ssh_keys: key.id
-      if key.name == "${var.DIGITALOCEAN_PROJECT_NAME}-${each.key}"
+    for key in digitalocean_ssh_key.ssh_keys : key.id
+    if key.name == "${var.DIGITALOCEAN_PROJECT_NAME}-${each.key}"
   ])
+
+  // Install docker on each droplet by SSHing in.
+  provisioner "remote-exec" {
+    connection {
+      host        = self.ipv4_address
+      timeout     = "3m"
+      type        = "ssh"
+      user        = "root"
+      private_key = file("${var.SSH_KEY_DIR}/${var.DIGITALOCEAN_PROJECT_NAME}-${each.key}")
+    }
+
+    inline = [
+      "curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh && rm get-docker.sh"
+    ]
+  }
 }
 
 /*
@@ -34,7 +37,7 @@ resource "digitalocean_droplet" "droplets" {
   This is a list that is based on the output of the module `ssh_key_pair`, which actually generates the files, below.
 */
 resource "digitalocean_ssh_key" "ssh_keys" {
-  for_each = module.ssh_key_pair
+  for_each   = module.ssh_key_pair
   name       = each.value.key_name
   public_key = each.value.public_key
 }
@@ -45,7 +48,7 @@ resource "digitalocean_ssh_key" "ssh_keys" {
   For example, this will create the private key at: "/Users/james/.ssh/createinfra-mainnode"
 */
 module "ssh_key_pair" {
-  for_each = local.droplets
+  for_each = var.NODES
 
   source              = "git::https://github.com/cloudposse/terraform-tls-ssh-key-pair.git?ref=master"
   ssh_public_key_path = var.SSH_KEY_DIR

@@ -19,22 +19,16 @@ variable "DIGITALOCEAN_ACCESS_TOKEN" {
   description = "The access token for digital ocean - available from your dashboard"
 }
 
-variable "DIGITALOCEAN_DISTRO_IMAGE" {
-  type        = string
-  description = "The base O/S image to run on the droplet, eg: debian-10-x64"
-}
-
-variable "DIGITALOCEAN_DROPLET_NAME" {
-  type        = string
-  description = "The name for the droplet on digital ocean"
-}
-
-variable "DIGITALOCEAN_DROPLET_SIZE" {
-  type        = string
-  description = "The size of the droplet on digitalocean, eg: s-1vcpu-1gb, s-1vcpu-3gb etc"
+variable "NODES" {
+  type = map(object({
+    image = string
+    size  = string
+    tag   = string
+  }))
+  description = "A map of objects, with the key being the name of the node, to spin up"
 }
 
 variable "SSH_KEY_DIR" {
-  type = string
+  type        = string
   description = "The ssh directory, typically /Users/<your_username>/.ssh (only absolute directories work here)"
 }
